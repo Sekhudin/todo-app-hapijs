@@ -1,0 +1,9 @@
+"build": "npx tailwindcss -i ./style.css -o ./public/css/global.css --watch",
+
+
+urutan deploy di heroku
+push heroku, caranya:
+git push heroku master
+
+jalankan perintah berikut 
+heroku buildpacks
