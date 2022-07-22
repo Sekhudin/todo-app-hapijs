@@ -5,12 +5,20 @@ const Inert = require("@hapi/inert");
 const { db } = require("./src/utils/db_conn");
 const v1_routes = require("./src/routes/v1");
 
-const myServer = Hapi.server({
-  host: "localhost",
-  port: 5000,
-});
+const host = process.env.HOSTNAME || "localhost";
+const port = process.env.PORT || 5000;
 
 const serverRun = async () => {
+  const myServer = Hapi.server({
+    host: host,
+    port: port,
+    routes: {
+      cors: {
+        origin: ["*"],
+      },
+    },
+  });
+
   // midleware
   await myServer.register(Vision);
   await myServer.register(Inert);
