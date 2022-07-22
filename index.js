@@ -5,12 +5,12 @@ const Inert = require("@hapi/inert");
 const { db } = require("./src/utils/db_conn");
 const v1_routes = require("./src/routes/v1");
 
-const host = process.env.HOSTNAME || "localhost";
+// const host = process.env.HOSTNAME || "localhost";
 const port = process.env.PORT || 5000;
 
 const serverRun = async () => {
   const myServer = Hapi.server({
-    host: host,
+    // host: host,
     port: port,
     routes: {
       cors: {
