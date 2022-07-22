@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./public/css/global.css" />
+    <title>Todo | {{title}}</title>
+  </head>
+  <body class="select-none">
+    <div class="min-h-screen w-screen bg-neutral-50">
+      <div
+        class="w-full py-2 flex justify-center items-center space-x-2 bg-white shadow-md sticky top-0"
+      >
+        <p class="text-gray-600 text-lg font-bold">Hapi!</p>
+        <p class="text-gray-400 text-sm font-light">
+          Simple impelementasi todo list application
+        </p>
+      </div>
+
+      <div class="px-5 md:px-6 lg:px-20 xl:px-32 2xl:px-40">
+        <p class="pt-5 text-lg font-bold text-gray-500">Your todo list:</p>
+        <div class="w-full min-h-screen">
+          <div class="w-full h-fit" id="containerTodo">
+            <!-- Bagian card todos -->
+            <!-- Bagian card todos -->
+            <!-- Bagian card todos -->
+          </div>
+          <div class="h-10 w-full"></div>
+          <div class="flex justify-center">
+            <button
+              class="py-1 px-4 shadow-md text-gray-50 bg-slate-600 hover:bg-slate-700 active:bg-slate-800 text-sm font-semibold rounded-full"
+              onclick="pathTambah('/todos')"
+            >
+              add todo
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="h-20 w-full"></div>
+      <div
+        class="p-2 bg-slate-800 flex justify-center items-center relative bottom-0 inset-x-0"
+      >
+        <p class="text-white italic font-medium text-sm">
+          Created By: KantjaStuck
+        </p>
+      </div>
+    </div>
+    <script>
+      const pathTambah = (nextPath) => {
+        let path = window.location.origin;
+        window.location.replace(path + nextPath);
+      };
+
+      const getElement = (id) => {
+        return document.getElementById(id);
+      };
+
+      // Variabel
+      const url_base = window.location.origin;
+
+      // iterate element by data
+      window.addEventListener("load", () => {
+        const containerTodo = document.getElementById("containerTodo");
+        fetch(`${url_base}/v1/todos`, { method: "GET" })
+          .then((payload) => payload.json())
+          .then((res) => {
+            const data = res.data;
+            if (data) {
+              data.map((dt, idx) => {
+                containerTodo.appendChild(createCard(data, dt, idx));
+              });
+            } else {
+              const element = document.createElement("div");
+              element.className = "w-full flex justify-center items-center";
+              element.innerHTML = zeroNote();
+              containerTodo.appendChild(element);
+            }
+          })
+          .catch((err) => {
+            console.log("Error", err);
+          });
+      });
+
+      // create card todo-list
+      const createCard = (data, dt, idx) => {
+        // element
+        const element = document.createElement("div");
+        element.id = idx;
+        element.innerHTML = iterateElement();
+        const paragraphs = element.getElementsByTagName("p");
+        paragraphs[0].innerText = dt.title;
+        paragraphs[1].innerText = dt.createAt;
+        paragraphs[2].innerText = dt.body;
+        paragraphs[3].innerText = tags_parser(dt.tags);
+
+        // variabel
+        const note_id = data[idx].id;
+
+        // element event listener
+        const buttons = element.getElementsByTagName("button");
+        buttons[0].addEventListener("click", () => {
+          pathTambah(`/todos/${dt.id}`);
+        });
+
+        buttons[1].addEventListener("click", () => {
+          if (window.confirm("Catatan akan dihapus?") == true) {
+            fetch(`${url_base}/v1/todos/${note_id}`, {
+              method: "DELETE",
+            })
+              .then((res) => res.json())
+              .then((value) => {
+                alert(value.message);
+                location.reload();
+              })
+              .catch((err) => {
+                console.log("Gagal", err);
+              });
+          }
+        });
+
+        return element;
+      };
+
+      const tags_parser = (tags) => {
+        let result = "";
+        tags.map((tag, idx) => {
+          result += `#${tag} `;
+        });
+        return result;
+      };
+
+      const iterateElement = () => {
+        return `<div class="w-full pt-10 pb-5 px-10 bg-white rounded shadow-md">
+        <div class="w-full flex justify-between">
+          <p class="text-base text-gray-600 font-bold capitalize">title</p>
+          <p class="text-sm italic font-light text-gray-500">Tanggal</p>
+        </div>
+        <div class="h-2 w-full"></div>
+        <p class="text-gray-500 text-base font-normal text-justify">
+          Body
+        </p>
+        <div class="h-8 w-full"></div>
+        <div class="flex space-x-5">
+          <p class="text-blue-500 font-semibold text-sm">#Tags</p>
+        </div>
+        <div class="h-2 w-full"></div>
+        <div class="w-full flex justify-end items-center space-x-2">
+          <button
+            class="py-1 px-2 text-gray-50 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-sm rounded"
+          >
+            ubah
+          </button>
+          <button
+            class="py-1 px-2 text-gray-50 bg-pink-600 active:bg-pink-700 text-sm rounded"
+          >
+            hapus
+          </button>
+        </div>
+      </div>
+      <div class="h-6 w-full"></div>`;
+      };
+
+      const zeroNote = () => {
+        return `<div class="w-full text-center">
+      <div class="h-5"></div>
+      <p class="text-xl text-gray-500 font-bold">Tidak ada catatan</p>
+      <div class="h-2"></div>
+      <p class="text-sm font-light text-gray-500 italic">
+        (tekan tambah untuk menambahkan catatan baru)
+      </p>
+    </div>`;
+      };
+    </script>
+  </body>
+</html>

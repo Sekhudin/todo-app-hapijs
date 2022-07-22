@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./public/css/global.css" />
+    <link rel="stylesheet" href="../public/css/global.css" />
+    <title>Todo | {{title}}</title>
+  </head>
+  <body>
+    <div class="w-screen min-h-screen">
+      <div
+        class="w-full py-2 flex justify-center items-center space-x-2 bg-white shadow-md sticky top-0"
+      >
+        <p class="text-gray-600 text-lg font-bold">Hapi!</p>
+        <p class="text-gray-400 text-sm font-light">
+          Simple impelementasi todo list application
+        </p>
+      </div>
+
+      <div class="bg-neutral-50">
+        <div class="h-20 w-full"></div>
+        <div class="p-4 flex justify-center items-center w-full">
+          <p class="pt-5 text-lg font-bold text-gray-500">Add new todo:</p>
+        </div>
+        <div class="w-full h-full flex justify-center items-center">
+          <div class="bg-white rounded-md shadow p-5">
+            <p class="font-bold text-gray-500 text-base">Title:</p>
+            <input
+              type="text"
+              name="title_todo"
+              id="title"
+              class="w-full border border-gray-400 focus:outline-none rounded-md text-gray-500 text-base p-2 focus:border-blue-500 transition duration-500"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <p class="font-bold text-gray-500 text-base">Details:</p>
+            <textarea
+              name="body_todo"
+              id="body"
+              cols="30"
+              rows="10"
+              class="w-full border border-gray-400 focus:outline-none rounded-md text-gray-500 text-base p-2 focus:border-blue-500 transition duration-500"
+              autocomplete="off"
+              spellcheck="false"
+            ></textarea>
+            <p class="font-bold text-gray-500 text-base">Tags:</p>
+            <p class="font-light italic text-gray-400 text-sm">
+              (pisahkan dengan tanda "," untuk setiap tag)
+            </p>
+            <input
+              type="text"
+              name="tags_todo"
+              id="tags"
+              class="w-full border border-gray-400 focus:outline-none rounded-md text-gray-500 text-base p-2 focus:border-blue-500 transition duration-500"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <div class="h-3 w-full"></div>
+            <div class="w-full flex justify-end space-x-3">
+              <button
+                id="submit"
+                class="py-1 px-2 text-gray-50 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-sm rounded"
+                onclick="submit()"
+              >
+                add todo
+              </button>
+              <button
+                id="reset"
+                class="py-1 px-2 text-gray-50 bg-pink-500 hover:bg-pink-600 active:bg-pink-700 text-sm rounded"
+                onclick="reset()"
+              >
+                reset
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="h-5 w-full"></div>
+        <div class="w-full flex justify-center items-center">
+          <button
+            class="py-1 px-4 text-gray-50 bg-slate-600 hover:bg-slate-700 active:bg-slate-800 text-sm font-semibold rounded-full"
+            onclick="backHome('/home')"
+          >
+            Home
+          </button>
+        </div>
+        <div class="h-52 w-full"></div>
+      </div>
+
+      <div
+        class="relative bottom-0 inset-x-0 p-2 bg-slate-800 flex justify-center items-center"
+      >
+        <p class="text-white italic font-medium text-sm">
+          Created By: KantjaStuck
+        </p>
+      </div>
+    </div>
+
+    <script>
+      const getElement = (id) => {
+        const element = document.getElementById(id);
+        return element;
+      };
+      // deklarasi variabel
+      const url_base = window.location.origin;
+      const url_id = window.location.href.split("/").reverse()[0];
+      const titleElement = getElement("title");
+      const bodyElement = getElement("body");
+      const tagsElement = getElement("tags");
+      const btSubmit = getElement("submit");
+      const btReset = getElement("reset");
+
+      // window onload
+      window.addEventListener("load", () => {
+        if (url_id.length > 10 || url_id !== "todos") {
+          btReset.classList.add("hidden");
+          btSubmit.innerText = "update";
+          btSubmit.onclick = () => {
+            update();
+          };
+          fetch(`${url_base}/v1/todos/${url_id}`, { method: "GET" })
+            .then((res) => res.json())
+            .then((value) => {
+              if (value.data.length === 1) {
+                const { title, body, tags } = value.data[0];
+                titleElement.value = title;
+                bodyElement.value = body;
+                tagsElement.value = tags;
+              } else {
+                throw "kesalahan terdeteksi";
+              }
+            })
+            .catch((err) => {
+              alert(err);
+              console.log("ERROR", err);
+            });
+        }
+      });
+
+      const backHome = (nextPath) => {
+        let path = window.location.origin;
+        const newPath = path + nextPath;
+        window.location.replace(newPath);
+      };
+
+      const submit = () => {
+        const title_todo = titleElement.value;
+        const body_todo = bodyElement.value;
+        const tags_todo = tagsElement.value;
+        const data = new FormData();
+
+        if (title_todo && body_todo && tags_todo) {
+          data.append("title", title_todo);
+          data.append("body", body_todo);
+          data.append("tags", tags_todo);
+
+          fetch(`${url_base}/v1/todos`, {
+            method: "POST",
+            body: data,
+          })
+            .then((res) => res.json())
+            .then((value) => {
+              alert(value.message);
+              if (value.status === "succes") {
+                reset();
+              }
+            })
+            .catch((err) => {
+              alert("Sesuatu telah salah");
+              console.log("ERROR", err);
+            });
+        } else {
+          alert("Semua form harus diisi!");
+        }
+      };
+
+      const update = () => {
+        const title_todo = titleElement.value;
+        const body_todo = bodyElement.value;
+        const tags_todo = tagsElement.value;
+        const data = new FormData();
+
+        if (title_todo && body_todo && tags_todo) {
+          data.append("title", title_todo);
+          data.append("body", body_todo);
+          data.append("tags", tags_todo);
+
+          fetch(`${url_base}/v1/todos/${url_id}`, {
+            method: "PUT",
+            body: data,
+          })
+            .then((res) => res.json())
+            .then((value) => {
+              alert(value.message);
+              if (value.status === "succes") {
+                reset();
+              }
+            })
+            .catch((err) => {
+              alert("Sesuatu telah salah");
+              console.log("ERROR", err);
+            });
+        } else {
+          alert("Semua form harus diisi!");
+        }
+      };
+
+      const reset = () => {
+        titleElement.value = "";
+        bodyElement.value = "";
+        tagsElement.value = "";
+      };
+    </script>
+  </body>
+</html>
