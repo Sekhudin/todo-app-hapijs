@@ -3,6 +3,7 @@
 tailwind.config.js
 
 # unlink file
-z_Rules.txt
 package-lock.json
 yarn.lock
+style.css
+note.txt
